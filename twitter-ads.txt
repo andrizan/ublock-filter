@@ -1,0 +1,39 @@
+! Title: X (Twitter) Ads
+! Description: Removes promoted posts (ads) from X/Twitter: For You, Following, custom tabs, replies, search and profiles.
+! Homepage: https://github.com/andrizan/ublock-filter
+! Expires: 1 day
+! Last modified: 2026-11-20
+! Requires: uBlock Origin 1.72.0+ (uBO-flavored JSONPath "v2:")
+!
+! JSON paths and selectors checked 2026-11-20 against the new X web frontend
+! (Relay/Tailwind, api.x.com GraphQL with snake_case fields) in Firefox 160.
+
+! ---------------------------------------------------------------------------
+! 1. JSON level (primary)
+! ---------------------------------------------------------------------------
+! Ads arrive inside GraphQL timeline responses as entries whose entry_id starts with
+! "promoted-" (e.g. "promoted-tweet-<id>-<hash>") and that carry content.content.promoted_metadata:
+!   HomeTimeline             -> data.home_timeline.home_timeline_urt.instructions[].entries[]
+!   HomeLatestTimelineQuery  -> data.home.home_timeline_urt.instructions[].entries[]
+!   TweetDetail              -> data.threaded_conversation_with_injections_v2.instructions[].entries[]
+! Removing them from the response (instead of hiding them in the DOM) matters: the timeline is a
+! virtualized list that never re-measures, so a hidden ad leaves a ~500px blank gap.
+
+! Top-level timeline entries (home, following, replies, search, profile)
+x.com##+js(json-edit-fetch-response, v2:$..entries[?@.entry_id^="promoted-"], propsToMatch, /graphql/)
+! Items inside timeline modules (e.g. conversation threads in replies)
+x.com##+js(json-edit-fetch-response, v2:$..items[?@.entry_id*="promoted-"], propsToMatch, /graphql/)
+
+! ---------------------------------------------------------------------------
+! 2. Network
+! ---------------------------------------------------------------------------
+! Ad impression/engagement logging
+||api.x.com/1.1/promoted_content/$domain=x.com
+
+! ---------------------------------------------------------------------------
+! 3. Cosmetic fallback
+! ---------------------------------------------------------------------------
+! Only relevant if X changes its JSON and section 1 stops matching. A regular post always has a
+! timestamp link (a[data-base-ui-tooltip-trigger][href*="/status/"]) in its header; an ad shows
+! "Ad"/"Iklan" or nothing there instead. Language independent. Leaves a blank gap (see above).
+x.com##[id^="urt:"] > ul > li:has(> [role="link"][data-href*="/status/"] > article):not(:has(.x-middot-group a[data-base-ui-tooltip-trigger][href*="/status/"]))
