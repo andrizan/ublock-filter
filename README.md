@@ -4,14 +4,20 @@ A [uBlock Origin](https://github.com/gorhill/uBlock) filter list that removes ad
 
 ## Install
 
-**Subscribe (auto-updates):**
+**One click:** with uBlock Origin installed, click the button on this page on github.com and confirm with **Subscribe** in the tab that uBO opens:
+
+[![Subscribe in uBlock Origin](https://img.shields.io/badge/uBlock%20Origin-Subscribe-800000?style=for-the-badge&logo=ublockorigin&logoColor=white)](https://subscribe.adblockplus.org/?location=https%3A%2F%2Fcdn.jsdelivr.net%2Fgh%2Fandrizan%2Fublock-filter%40main%2Ftwitter-ads.txt&title=X%20%28Twitter%29%20Ads)
+
+**Import by URL (auto-updates):**
 
 1. Open the uBlock Origin dashboard → **Filter lists**.
 2. Scroll to the bottom, tick **Import...** and paste:
    ```
-   https://raw.githubusercontent.com/andrizan/ublock-filter/main/twitter-ads.txt
+   https://cdn.jsdelivr.net/gh/andrizan/ublock-filter@main/twitter-ads.txt
    ```
 3. Click **Apply changes**, then reload x.com.
+
+The list is served through the jsDelivr CDN, which caches it for up to 12 hours, so a fix pushed here can take that long to reach subscribers.
 
 **Or paste manually:** copy the contents of [`twitter-ads.txt`](twitter-ads.txt) into the dashboard's **My filters** tab and click **Apply changes**. Manual copies don't auto-update.
 
@@ -58,3 +64,11 @@ If ads still appear:
 1. Make sure the list is enabled and up to date (dashboard → **Filter lists** → **Update now**).
 2. Open the uBO logger on an x.com tab and check that the `json-edit-fetch-response` scriptlets are injected.
 3. If X changed its response format, please open an issue with the operation name (e.g. `HomeTimeline`) and the path to the promoted entry.
+
+## Maintaining
+
+After pushing a change to `twitter-ads.txt`, bump `! Last modified:` and purge the CDN cache so subscribers get it right away:
+
+```
+https://purge.jsdelivr.net/gh/andrizan/ublock-filter@main/twitter-ads.txt
+```
